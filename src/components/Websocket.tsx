@@ -2,16 +2,11 @@ import { useContext, useEffect, useState } from 'react';
 import { WebsocketContext } from '../contexts/WebsocketContext';
 import axios from "axios";
 
-type AuthPayload = {
-  content: string;
-  msg: string;
-};
-
 const Websocket = () => {
   const [value, setValue] = useState('');
-  const [authDatas, setAuthDatas] = useState<AuthPayload[]>([]);
+  const [authDatas, setAuthDatas] = useState([]);
   const socket = useContext(WebsocketContext);
-
+  let authdatass:any=authDatas;
   useEffect(() => {
     socket.on('connect', () => {
       console.log('Connected! Socket Id: ',socket.id);
@@ -19,16 +14,17 @@ const Websocket = () => {
     });
     socket.on('onAuthDone', (authResponse: any) => {
       let face_id_exists=0;
-      authDatas.map((row,index)=>{
-        if(row.content==authResponse.content.face_id){
+      authDatas.map((row)=>{
+        if(row==authResponse.content.face_id){
           face_id_exists=1;
         }
       });
       if(face_id_exists==0){
-        authDatas.push({'content':authResponse.content.face_id,'msg':authResponse.msg});
+        authdatass[authDatas.length]=authResponse.content.face_id;
+        setAuthDatas(authdatass);
         console.log('authentication success!');
-        console.log('authDatas1',authResponse);
-        setAuthDatas(authDatas);
+        console.log('authDatas',authDatas);
+        alert(authDatas.length+' user connected');
       }
       
     });
@@ -37,7 +33,7 @@ const Websocket = () => {
       socket.off('connect');
       socket.off('onMessage');
     };
-  }, []);
+  });
 
   const onSubmit = async () => {
     let accessTokenUrl='https://apidev.facechain.org/auth/api/access-token?clientId=7bsvancpl4tio60600pn6hnr58&clientSecret=1d5bssl48phc3vjfh5ljntkl9b2u6a0r80kit6vg08f9kpf70ch9';
@@ -64,7 +60,7 @@ const Websocket = () => {
         "socket_id":localStorage.getItem("socket_id"),
         "phone": value
       }
-      let sendRequestUrl='http://localhost:3015/facelink/request/sendLink';
+      let sendRequestUrl='https://apidev.facechain.org/facelink/request/sendLink';
       axios.post(sendRequestUrl , data, {timeout: 60000, maxContentLength: Infinity, maxBodyLength: Infinity, headers: headers })
       .then(function (response) {
           if(response.data['error']){
@@ -95,16 +91,6 @@ const Websocket = () => {
             onChange={(e) => setValue(e.target.value)}
           />
           <button onClick={onSubmit}>Send</button>
-        </div>
-        <div>&nbsp;</div>
-        <div>
-          {authDatas.length === 0 ? (
-            <div>No User Connected</div>
-          ) : (
-            <div>
-              <div>{authDatas.length} User Connected</div>
-            </div>
-          )}
         </div>
       </div>
     </div>

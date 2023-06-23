@@ -1,5 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
-import { WebsocketContext } from '../contexts/WebsocketContext';
+import { useEffect, useState } from 'react';
 import axios from "axios";
 
 type MessagePayload = {
@@ -13,8 +12,7 @@ const AuthRequest = () => {
   };
   const [value, setValue] = useState(state);
   const [messages, setMessages] = useState<MessagePayload[]>([]);
-  const socket = useContext(WebsocketContext);
-  
+   
   useEffect(() => {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
@@ -53,7 +51,7 @@ const AuthRequest = () => {
           let socket_id:any=localStorage.getItem("socket_id");
           formData.append('selfie_image', file);
           formData.append('socket_id', socket_id);
-          let sendRequestUrl='http://localhost:3015/facelink/request/login-request';
+          let sendRequestUrl='https://apidev.facechain.org/facelink/request/login-request';
           axios.post(sendRequestUrl , formData, {timeout: 60000, maxContentLength: Infinity, maxBodyLength: Infinity, headers: headers })
           .then(function (response) {
               if(response.data['error']){
